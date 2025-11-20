@@ -4,7 +4,11 @@
   "description": "Craftify - E-commerce platform for handmade products",
   "scripts": {
     "build": "cd E-commmerce/frontend && npm install && npm run build",
-    "vercel-build": "cd E-commmerce/frontend && npm install && npm run build"
+    "vercel-build": "cd E-commmerce/frontend && npm install && npm run build",
+    "start": "cd E-commmerce/backend && npm start",
+    "dev:frontend": "cd E-commmerce/frontend && npm start",
+    "dev:backend": "cd E-commmerce/backend && npm run dev",
+    "install:all": "cd E-commmerce/backend && npm install && cd ../frontend && npm install"
   },
   "engines": {
     "node": ">=18.0.0"
