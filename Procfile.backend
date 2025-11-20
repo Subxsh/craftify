@@ -1,0 +1,2 @@
+# Railway Backend Configuration
+web: cd E-commmerce/backend && npm start

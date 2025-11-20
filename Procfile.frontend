@@ -1,0 +1,2 @@
+# Railway Frontend Configuration
+web: cd E-commmerce/frontend && npm install && npm run build && npx serve -s build -p $PORT
