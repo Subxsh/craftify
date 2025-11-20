@@ -5,13 +5,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copy package files
-COPY backend/package*.json ./
+COPY E-commmerce/backend/package*.json ./
 
 # Install dependencies
 RUN npm ci --only=production
 
 # Copy backend source code
-COPY backend/ ./
+COPY E-commmerce/backend/ ./
 
 # Create uploads directory
 RUN mkdir -p uploads

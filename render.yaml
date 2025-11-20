@@ -4,8 +4,8 @@ services:
     name: craftify-backend
     env: node
     region: oregon
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: cd E-commmerce/backend && npm install
+    startCommand: cd E-commmerce/backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -31,8 +31,8 @@ services:
     name: craftify-frontend
     env: static
     region: oregon
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/build
+    buildCommand: cd E-commmerce/frontend && npm install && npm run build
+    staticPublishPath: E-commmerce/frontend/build
     routes:
       - type: redirect
         source: /*

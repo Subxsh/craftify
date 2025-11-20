@@ -4,13 +4,13 @@ FROM node:18-alpine as build
 WORKDIR /app
 
 # Copy package files
-COPY frontend/package*.json ./
+COPY E-commmerce/frontend/package*.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy frontend source code
-COPY frontend/ ./
+COPY E-commmerce/frontend/ ./
 
 # Build the application
 RUN npm run build
@@ -22,7 +22,7 @@ FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Copy nginx configuration
-COPY frontend/nginx.conf /etc/nginx/nginx.conf
+COPY E-commmerce/frontend/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 
