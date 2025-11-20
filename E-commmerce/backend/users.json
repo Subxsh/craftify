@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "_id": "user-1",
+      "firstName": "Subash",
+      "lastName": "Periyasamy",
+      "email": "subash@craftify.com",
+      "password": "password123",
+      "role": "seller",
+      "createdAt": "2025-08-18T09:00:00.000Z",
+      "cart": []
+    },
+    {
+      "_id": "user-2",
+      "firstName": "Vijeth",
+      "lastName": "B",
+      "email": "vijeth@craftify.com",
+      "password": "password123",
+      "role": "seller",
+      "createdAt": "2025-08-18T09:00:00.000Z",
+      "cart": []
+    },
+    {
+      "_id": "user-3",
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@craftify.com",
+      "password": "admin123",
+      "role": "seller",
+      "createdAt": "2025-08-18T09:00:00.000Z",
+      "cart": []
+    },
+    {
+      "_id": "user-1755509851604",
+      "firstName": "admin1",
+      "lastName": "fds",
+      "email": "subashp.23it@kongu.edu",
+      "password": "subash",
+      "role": "seller",
+      "createdAt": "2025-08-18T09:37:31.604Z",
+      "cart": []
+    },
+    {
+      "_id": 5,
+      "firstName": "subash",
+      "lastName": "Periyasamy",
+      "email": "subash@kongu.edu",
+      "role": "seller",
+      "cart": [
+        {
+          "productId": "product-2",
+          "quantity": 1
+        },
+        {
+          "productId": "product-1",
+          "quantity": 1
+        }
+      ],
+      "createdAt": "2025-11-19T14:04:33.535Z"
+    }
+  ],
+  "userCounter": 6,
+  "lastSaved": "2025-11-19T14:05:52.362Z"
+}
