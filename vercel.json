@@ -1,21 +1,7 @@
 {
   "version": 2,
-  "name": "craftify",
-  "buildCommand": "cd E-commmerce/frontend && npm install && npm run build",
-  "outputDirectory": "E-commmerce/frontend/build",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/E-commmerce/frontend/build/$1"
-    }
-  ],
-  "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
+  "name": "craftify-frontend",
+  "github": {
+    "silent": true
   }
 }
