@@ -26,11 +26,10 @@ services:
           property: host
     healthCheckPath: /api/health
 
-  # Frontend Web Service
+  # Frontend Static Site
   - type: web
     name: craftify-frontend
     env: static
-    region: oregon
     buildCommand: cd E-commmerce/frontend && npm install && npm run build
     staticPublishPath: E-commmerce/frontend/build
     routes:
