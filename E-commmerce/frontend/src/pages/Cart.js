@@ -431,7 +431,7 @@ const Cart = () => {
                     
                     <ProductInfo>
                       <ProductName>{item.product?.name || 'Product Unavailable'}</ProductName>
-                      <ProductPrice>${item.price}</ProductPrice>
+                      <ProductPrice>Rs.{item.price}</ProductPrice>
                       <SellerName>by {item.product?.seller?.firstName || 'Unknown'} {item.product?.seller?.lastName || 'Seller'}</SellerName>
                     </ProductInfo>
                     

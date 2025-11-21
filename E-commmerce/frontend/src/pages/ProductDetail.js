@@ -364,9 +364,9 @@ const ProductDetail = () => {
 
             <PriceSection>
               <Price>
-                ${product.price}
+                Rs.{product.price}
                 {product.comparePrice && product.comparePrice > product.price && (
-                  <OriginalPrice>${product.comparePrice}</OriginalPrice>
+                  <OriginalPrice>Rs.{product.comparePrice}</OriginalPrice>
                 )}
               </Price>
             </PriceSection>

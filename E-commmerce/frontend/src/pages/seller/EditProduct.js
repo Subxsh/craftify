@@ -312,7 +312,7 @@ const EditProduct = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label htmlFor="price">Price ($) *</Label>
+                  <Label htmlFor="price">Price (Rs.) *</Label>
                   <Input
                     type="number"
                     id="price"

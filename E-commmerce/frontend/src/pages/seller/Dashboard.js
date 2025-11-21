@@ -430,7 +430,7 @@ const Dashboard = () => {
             <StatIcon color="var(--accent-color)">
               <FiDollarSign />
             </StatIcon>
-            <StatValue>${stats.totalRevenue}</StatValue>
+            <StatValue>Rs.{stats.totalRevenue}</StatValue>
             <StatLabel>Total Revenue</StatLabel>
           </StatCard>
 
@@ -493,7 +493,7 @@ const Dashboard = () => {
                   </ProductImage>
                   <ProductInfo>
                     <ProductName>{product.name}</ProductName>
-                    <ProductPrice>${product.price}</ProductPrice>
+                    <ProductPrice>Rs.{product.price}</ProductPrice>
                     <div style={{ marginBottom: 'var(--spacing-sm)' }}>
                       <p style={{ color: 'var(--gray)', fontSize: 'var(--font-sm)', marginBottom: 'var(--spacing-xs)' }}>
                         {product.category?.name || product.category}

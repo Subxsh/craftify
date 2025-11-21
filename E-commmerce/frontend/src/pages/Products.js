@@ -572,9 +572,9 @@ const Products = () => {
                   </SellerName>
 
                   <PriceSection>
-                    <Price>${product.price}</Price>
+                    <Price>Rs.{product.price}</Price>
                     {product.comparePrice && product.comparePrice > product.price && (
-                      <OriginalPrice>${product.comparePrice}</OriginalPrice>
+                      <OriginalPrice>Rs.{product.comparePrice}</OriginalPrice>
                     )}
                   </PriceSection>
 

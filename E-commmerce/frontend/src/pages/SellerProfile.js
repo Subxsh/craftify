@@ -413,7 +413,7 @@ const SellerProfile = () => {
                     </ProductImage>
                     <ProductInfo>
                       <ProductName>{product.name}</ProductName>
-                      <ProductPrice>${product.price}</ProductPrice>
+                      <ProductPrice>Rs.{product.price}</ProductPrice>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)', marginBottom: 'var(--spacing-sm)' }}>
                         <FiStar size={14} fill="var(--accent-color)" color="var(--accent-color)" />
                         <span style={{ fontSize: 'var(--font-sm)', color: 'var(--gray)' }}>

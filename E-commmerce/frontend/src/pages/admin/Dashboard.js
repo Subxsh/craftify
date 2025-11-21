@@ -701,7 +701,7 @@ const Dashboard = () => {
                   <FiDollarSign />
                 </StatIcon>
                 <StatInfo>
-                  <StatValue>${stats.totalRevenue}</StatValue>
+                  <StatValue>Rs.{stats.totalRevenue}</StatValue>
                   <StatLabel>Total Revenue</StatLabel>
                 </StatInfo>
               </StatCard>
@@ -727,9 +727,9 @@ const Dashboard = () => {
                     <TableRow key={product._id}>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{product.category?.name || product.category}</TableCell>
-                      <TableCell>${product.price?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell>Rs.{product.price?.toFixed(2) || '0.00'}</TableCell>
                       <TableCell>{product.sales?.totalSold || 0}</TableCell>
-                      <TableCell>${product.sales?.revenue?.toFixed(2) || '0.00'}</TableCell>
+                      <TableCell>Rs.{product.sales?.revenue?.toFixed(2) || '0.00'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -767,7 +767,7 @@ const Dashboard = () => {
                           </div>
                         ))}
                       </TableCell>
-                      <TableCell>${(order.pricing?.total || order.totalAmount || 0).toFixed(2)}</TableCell>
+                      <TableCell>Rs.{(order.pricing?.total || order.totalAmount || 0).toFixed(2)}</TableCell>
                       <TableCell>
                         <StatusBadge className={order.status || 'pending'}>
                           {order.status || 'pending'}
@@ -1085,7 +1085,7 @@ const Dashboard = () => {
                 
                 <ProductDetailItem>
                   <h4>Price</h4>
-                  <p>${selectedProduct.price?.toFixed(2) || '0.00'}</p>
+                  <p>Rs.{selectedProduct.price?.toFixed(2) || '0.00'}</p>
                 </ProductDetailItem>
                 
                 <ProductDetailItem>

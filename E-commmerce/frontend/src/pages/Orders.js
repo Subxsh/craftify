@@ -320,7 +320,7 @@ const Orders = () => {
                   </OrderStatus>
                   
                   <OrderTotal>
-                    <div className="amount">${order.pricing?.total?.toFixed(2) || order.total?.toFixed(2) || '0.00'}</div>
+                    <div className="amount">Rs.{order.pricing?.total?.toFixed(2) || order.total?.toFixed(2) || '0.00'}</div>
                     <div className="items">{order.items?.length || 0} items</div>
                   </OrderTotal>
                 </OrderHeader>
@@ -335,7 +335,7 @@ const Orders = () => {
                         
                         <ItemInfo>
                           <h4>{item.name || item.product?.name}</h4>
-                          <p>Price: ${item.price?.toFixed(2) || '0.00'}</p>
+                          <p>Price: Rs.{item.price?.toFixed(2) || '0.00'}</p>
                         </ItemInfo>
                         
                         <ItemQuantity>
@@ -343,7 +343,7 @@ const Orders = () => {
                         </ItemQuantity>
                         
                         <ItemPrice>
-                          ${(item.subtotal || (item.price * item.quantity)).toFixed(2)}
+                          Rs.{(item.subtotal || (item.price * item.quantity)).toFixed(2)}
                         </ItemPrice>
                       </OrderItem>
                     ))}
