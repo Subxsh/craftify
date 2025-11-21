@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
@@ -284,6 +284,7 @@ const Products = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   // Add image loading state
   const [imageLoadStates, setImageLoadStates] = useState({});
@@ -307,6 +308,7 @@ const Products = () => {
     const searchQuery = searchParams.get('search');
     if (searchQuery) {
       setSearchTerm(searchQuery);
+      setDebouncedSearchTerm(searchQuery);
     }
     
     // Get category from URL parameters
@@ -318,9 +320,18 @@ const Products = () => {
     fetchProducts();
   }, [searchParams]);
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   useEffect(() => {
     filterProducts();
-  }, [products, searchTerm, selectedCategory]);
+  }, [products, debouncedSearchTerm, selectedCategory]);
 
   const fetchProducts = async () => {
     try {
@@ -342,11 +353,11 @@ const Products = () => {
     let filtered = products;
 
     // Filter by search term
-    if (searchTerm) {
+    if (debouncedSearchTerm) {
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        product.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        product.tags?.some(tag => tag.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
       );
     }
 
@@ -359,8 +370,8 @@ const Products = () => {
     
     // Update URL parameters
     const params = new URLSearchParams();
-    if (searchTerm) {
-      params.set('search', searchTerm);
+    if (debouncedSearchTerm) {
+      params.set('search', debouncedSearchTerm);
     }
     if (selectedCategory && selectedCategory !== 'All Categories') {
       params.set('category', selectedCategory);
