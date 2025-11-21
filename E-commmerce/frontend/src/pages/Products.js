@@ -285,6 +285,7 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   // Add image loading state
   const [imageLoadStates, setImageLoadStates] = useState({});
@@ -322,12 +323,17 @@ const Products = () => {
 
   // Debounce search term
   useEffect(() => {
+    if (searchTerm !== debouncedSearchTerm) {
+      setIsSearching(true);
+    }
+    
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 300); // 300ms delay
+      setIsSearching(false);
+    }, 500); // Increased delay to 500ms
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearchTerm]);
 
   useEffect(() => {
     filterProducts();
@@ -479,7 +485,16 @@ const Products = () => {
           <FiltersSection>
             <SearchBox>
               <SearchIcon>
-                <FiSearch />
+                {isSearching ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    <FiSearch />
+                  </motion.div>
+                ) : (
+                  <FiSearch />
+                )}
               </SearchIcon>
               <SearchInput
                 type="text"
