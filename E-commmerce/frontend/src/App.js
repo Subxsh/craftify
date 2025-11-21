@@ -4,7 +4,6 @@ import styled from 'styled-components';
 
 // Layout Components
 import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
 
 // Pages
 import Home from './pages/Home';
@@ -134,7 +133,6 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </MainContent>
-      <Footer />
     </AppContainer>
   );
 }
