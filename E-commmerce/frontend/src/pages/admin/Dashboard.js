@@ -316,6 +316,7 @@ const Dashboard = () => {
     totalRevenue: 0
   });
   const [products, setProducts] = useState([]);
+  const [pendingProducts, setPendingProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [demandProducts, setDemandProducts] = useState([]); // New state for demand products
@@ -330,13 +331,15 @@ const Dashboard = () => {
       setLoading(true);
       
       // Fetch all data in parallel
-      const [productsData, usersData, ordersData] = await Promise.all([
+      const [productsData, pendingProductsData, usersData, ordersData] = await Promise.all([
         productService.getAllProducts(),
+        productService.getPendingProducts(),
         userService.getAllUsers(),
         orderService.getAllOrders()
       ]);
       
       console.log('Products data received:', productsData);
+      console.log('Pending products data received:', pendingProductsData);
       console.log('Products count:', productsData.length);
       
       // Log each product to check for duplicates
@@ -353,6 +356,7 @@ const Dashboard = () => {
         .slice(0, 5);
       
       setProducts(activeProducts);
+      setPendingProducts(pendingProductsData);
       setUsers(usersData);
       setOrders(ordersData);
       setDemandProducts(topDemandProducts); // Set demand products
@@ -379,6 +383,45 @@ const Dashboard = () => {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Product approval actions
+  const handleApproveProduct = async (product) => {
+    console.log('Approve product:', product);
+    if (window.confirm(`Approve "${product.name}" for publication?`)) {
+      try {
+        await productService.approveProduct(product._id);
+        
+        // Remove from pending list and add to active products
+        setPendingProducts(prevPending => prevPending.filter(p => p._id !== product._id));
+        setProducts(prevProducts => [...prevProducts, { ...product, approvalStatus: 'approved', status: 'active' }]);
+        
+        alert(`Product "${product.name}" approved successfully!`);
+      } catch (error) {
+        console.error('Error approving product:', error);
+        alert('Failed to approve product: ' + error.message);
+      }
+    }
+  };
+
+  const handleRejectProduct = async (product) => {
+    console.log('Reject product:', product);
+    const reason = prompt(`Please provide a reason for rejecting "${product.name}":`);
+    if (reason && reason.trim()) {
+      try {
+        await productService.rejectProduct(product._id, reason.trim());
+        
+        // Remove from pending list
+        setPendingProducts(prevPending => prevPending.filter(p => p._id !== product._id));
+        
+        alert(`Product "${product.name}" rejected successfully!`);
+      } catch (error) {
+        console.error('Error rejecting product:', error);
+        alert('Failed to reject product: ' + error.message);
+      }
+    } else {
+      alert('Rejection reason is required.');
     }
   };
 
@@ -502,6 +545,9 @@ const Dashboard = () => {
         </SidebarItem>
         <SidebarItem active={activeSection === 'products'} onClick={() => setActiveSection('products')}>
           <FiPackage /> Products
+        </SidebarItem>
+        <SidebarItem active={activeSection === 'pending-approvals'} onClick={() => setActiveSection('pending-approvals')}>
+          <FiClock /> Product Approvals
         </SidebarItem>
         <SidebarItem active={activeSection === 'users'} onClick={() => setActiveSection('users')}>
           <FiUsers /> Users
@@ -668,6 +714,86 @@ const Dashboard = () => {
               </Table>
             </Section>
           </>
+        )}
+
+        {activeSection === 'pending-approvals' && (
+          <Section>
+            <SectionHeader>
+              <h2>Products Pending Approval ({pendingProducts.length})</h2>
+              <SearchBar>
+                <SearchInput placeholder="Search pending products..." />
+                <FiSearch />
+              </SearchBar>
+            </SectionHeader>
+            <Table>
+              <TableHead>
+                <tr>
+                  <TableHeader>Product</TableHeader>
+                  <TableHeader>Seller</TableHeader>
+                  <TableHeader>Category</TableHeader>
+                  <TableHeader>Price</TableHeader>
+                  <TableHeader>Submitted</TableHeader>
+                  <TableHeader>Actions</TableHeader>
+                </tr>
+              </TableHead>
+              <TableBody>
+                {pendingProducts.map((product) => (
+                  <TableRow key={product._id}>
+                    <TableCell>
+                      <strong>{product.name}</strong>
+                      <br />
+                      <span style={{ fontSize: '0.85em', color: 'var(--gray)' }}>
+                        {product.description?.substring(0, 100)}...
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {product.seller?.sellerProfile?.businessName || 
+                       `${product.seller?.firstName} ${product.seller?.lastName}`}
+                      <br />
+                      <span style={{ fontSize: '0.85em', color: 'var(--gray)' }}>
+                        {product.seller?.email}
+                      </span>
+                    </TableCell>
+                    <TableCell>{product.category?.name || product.category}</TableCell>
+                    <TableCell>${product.price?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell>
+                      {new Date(product.createdAt).toLocaleDateString()}
+                      <br />
+                      <span style={{ fontSize: '0.85em', color: 'var(--gray)' }}>
+                        {new Date(product.createdAt).toLocaleTimeString()}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <ActionButton 
+                        style={{ background: 'var(--success-color)', color: 'white', marginRight: '8px' }}
+                        onClick={() => handleApproveProduct(product)}
+                        title="Approve Product"
+                      >
+                        <FiCheckCircle />
+                      </ActionButton>
+                      <ActionButton 
+                        style={{ background: 'var(--danger-color)', color: 'white', marginRight: '8px' }}
+                        onClick={() => handleRejectProduct(product)}
+                        title="Reject Product"
+                      >
+                        <FiXCircle />
+                      </ActionButton>
+                      <ActionButton onClick={() => handleViewProduct(product)} title="View Product">
+                        <FiEye />
+                      </ActionButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {pendingProducts.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan="6" style={{ textAlign: 'center', padding: 'var(--spacing-2xl)' }}>
+                      <p style={{ color: 'var(--gray)' }}>No products pending approval</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Section>
         )}
 
         {activeSection === 'products' && (

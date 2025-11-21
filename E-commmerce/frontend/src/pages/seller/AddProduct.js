@@ -329,7 +329,7 @@ const AddProduct = () => {
       const result = await productService.createProduct(productData);
 
       console.log('✅ Product created successfully:', result);
-      alert('Product added successfully!');
+      alert('Product submitted successfully! It will be reviewed by an admin before going live. You can check the approval status in your dashboard.');
       navigate('/seller/dashboard');
 
     } catch (error) {
@@ -352,6 +352,21 @@ const AddProduct = () => {
             <p>Create a new listing for your handmade product</p>
           </div>
         </Header>
+
+        <div style={{ 
+          background: '#e7f3ff', 
+          border: '1px solid #bee5eb', 
+          borderRadius: 'var(--radius-md)', 
+          padding: 'var(--spacing-lg)', 
+          marginBottom: 'var(--spacing-xl)',
+          color: '#0c5460'
+        }}>
+          <h4 style={{ marginBottom: 'var(--spacing-sm)' }}>📝 Product Approval Process</h4>
+          <p style={{ fontSize: 'var(--font-sm)' }}>
+            Your product will be submitted for admin approval before it becomes visible to customers. 
+            You can track the approval status in your seller dashboard.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <FormContainer>

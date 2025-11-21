@@ -21,6 +21,101 @@ api.interceptors.request.use((config) => {
 });
 
 const productService = {
+  // Get products pending approval (admin only)
+  getPendingProducts: async () => {
+    try {
+      console.log('=== CALLING productService.getPendingProducts() ===');
+      
+      const response = await api.get('/products/admin/pending');
+      console.log('Pending products API response:', response);
+      
+      if (response.data.success) {
+        const products = response.data.data.products || [];
+        console.log('Pending products extracted from response:', products);
+        console.log('Pending products count:', products.length);
+        return products;
+      } else {
+        console.error('API returned error:', response.data.message);
+        throw new Error(response.data.message || 'Failed to fetch pending products');
+      }
+    } catch (error) {
+      console.error('Get pending products error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch pending products';
+      throw new Error(errorMessage);
+    }
+  },
+
+  // Approve product (admin only)
+  approveProduct: async (productId) => {
+    try {
+      console.log('=== CALLING productService.approveProduct() ===');
+      console.log('Product ID:', productId);
+      
+      const response = await api.post(`/products/${productId}/approve`);
+      console.log('Approve product API response:', response);
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        console.error('API returned error:', response.data.message);
+        throw new Error(response.data.message || 'Failed to approve product');
+      }
+    } catch (error) {
+      console.error('Approve product error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to approve product';
+      throw new Error(errorMessage);
+    }
+  },
+
+  // Reject product (admin only)
+  rejectProduct: async (productId, reason) => {
+    try {
+      console.log('=== CALLING productService.rejectProduct() ===');
+      console.log('Product ID:', productId);
+      console.log('Rejection reason:', reason);
+      
+      const response = await api.post(`/products/${productId}/reject`, {
+        reason: reason
+      });
+      console.log('Reject product API response:', response);
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        console.error('API returned error:', response.data.message);
+        throw new Error(response.data.message || 'Failed to reject product');
+      }
+    } catch (error) {
+      console.error('Reject product error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to reject product';
+      throw new Error(errorMessage);
+    }
+  },
+
+  // Get my products with approval status (seller)
+  getMyProducts: async () => {
+    try {
+      console.log('=== CALLING productService.getMyProducts() ===');
+      
+      const response = await api.get('/products/my-products');
+      console.log('My products API response:', response);
+      
+      if (response.data.success) {
+        const products = response.data.data.products || [];
+        console.log('My products extracted from response:', products);
+        console.log('My products count:', products.length);
+        return products;
+      } else {
+        console.error('API returned error:', response.data.message);
+        throw new Error(response.data.message || 'Failed to fetch your products');
+      }
+    } catch (error) {
+      console.error('Get my products error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch your products';
+      throw new Error(errorMessage);
+    }
+  },
+
   // Get all products for admin
   getAllProducts: async () => {
     try {

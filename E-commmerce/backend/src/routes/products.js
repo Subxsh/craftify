@@ -57,6 +57,134 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
+// @route   GET /api/products/admin/pending
+// @desc    Get products pending approval
+// @access  Private (Admin only)
+router.get('/admin/pending', protect, authorize('admin'), async (req, res) => {
+  try {
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+    }
+
+    const products = await Product.find({
+      approvalStatus: 'pending',
+      isDeleted: false
+    })
+      .populate('category', 'name slug')
+      .populate('seller', 'firstName lastName email sellerProfile.businessName sellerProfile.rating')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      data: {
+        products
+      }
+    });
+  } catch (error) {
+    console.error('Get pending products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching pending products'
+    });
+  }
+});
+
+// @route   POST /api/products/:id/approve
+// @desc    Approve a product
+// @access  Private (Admin only)
+router.post('/:id/approve', protect, authorize('admin'), async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+    
+    product.approvalStatus = 'approved';
+    product.status = 'active';
+    product.approvedBy = req.user._id;
+    product.approvedAt = new Date();
+    
+    await product.save();
+    
+    await product.populate('category', 'name slug');
+    await product.populate('seller', 'firstName lastName sellerProfile.businessName');
+    
+    res.json({
+      success: true,
+      message: 'Product approved successfully',
+      data: product
+    });
+  } catch (error) {
+    console.error('Approve product error:', error);
+    if (error.name === 'CastError') {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Server error while approving product'
+    });
+  }
+});
+
+// @route   POST /api/products/:id/reject
+// @desc    Reject a product
+// @access  Private (Admin only)
+router.post('/:id/reject', protect, authorize('admin'), [
+  body('reason').trim().isLength({ min: 1, max: 500 }).withMessage('Rejection reason is required and must be less than 500 characters')
+], handleValidationErrors, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+    
+    product.approvalStatus = 'rejected';
+    product.status = 'rejected';
+    product.rejectionReason = req.body.reason;
+    product.approvedBy = req.user._id;
+    product.approvedAt = new Date();
+    
+    await product.save();
+    
+    await product.populate('category', 'name slug');
+    await product.populate('seller', 'firstName lastName sellerProfile.businessName');
+    
+    res.json({
+      success: true,
+      message: 'Product rejected successfully',
+      data: product
+    });
+  } catch (error) {
+    console.error('Reject product error:', error);
+    if (error.name === 'CastError') {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Server error while rejecting product'
+    });
+  }
+});
+
 // @route   GET /api/products/admin
 // @desc    Get all products for admin (no filters)
 // @access  Private (Admin only)
@@ -234,6 +362,43 @@ router.get('/', [
   }
 });
 
+// @route   GET /api/products/my-products
+// @desc    Get current seller's products with approval status
+// @access  Private (Seller/Admin)
+router.get('/my-products', protect, async (req, res) => {
+  try {
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+    }
+
+    const products = await Product.find({
+      seller: req.user._id,
+      isDeleted: false
+    })
+      .populate('category', 'name slug')
+      .populate('approvedBy', 'firstName lastName')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      data: {
+        products
+      }
+    });
+  } catch (error) {
+    console.error('Get my products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching your products'
+    });
+  }
+});
+
 // @route   GET /api/products/seller/:sellerId
 // @desc    Get products by seller
 // @access  Public
@@ -376,7 +541,8 @@ router.post('/', protect, upload.array('images', 10), [
     const productData = {
       ...req.body,
       seller: req.user._id,
-      status: 'active',  // Set status to active by default so products appear in listings
+      status: req.user.role === 'admin' ? 'active' : 'pending_approval',  // Admin products go live immediately, seller products need approval
+      approvalStatus: req.user.role === 'admin' ? 'approved' : 'pending',
       inventory: {
         quantity: parseInt(req.body.quantity),
         trackQuantity: true,

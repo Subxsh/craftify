@@ -211,8 +211,24 @@ const productSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['draft', 'active', 'inactive', 'archived'],
+    enum: ['draft', 'pending_approval', 'approved', 'rejected', 'active', 'inactive', 'archived'],
     default: 'draft'
+  },
+  approvalStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: {
+    type: Date
+  },
+  rejectionReason: {
+    type: String,
+    trim: true
   },
   featured: {
     type: Boolean,

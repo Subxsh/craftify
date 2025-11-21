@@ -204,6 +204,39 @@ const ActionButton = styled.button`
   }
 `;
 
+const StatusBadge = styled.span`
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  
+  &.pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+  
+  &.approved {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  &.rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  
+  &.active {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+  }
+`;
+
 const EmptyState = styled.div`
   text-align: center;
   padding: var(--spacing-3xl);
@@ -268,7 +301,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       console.log('🛍️ Fetching seller products for user:', user._id);
-      const products = await productService.getSellerProducts(user._id);
+      const products = await productService.getMyProducts(); // Use new endpoint that includes approval status
       setProducts(products);
 
       // Calculate real stats from actual products using proper fields
@@ -461,9 +494,31 @@ const Dashboard = () => {
                   <ProductInfo>
                     <ProductName>{product.name}</ProductName>
                     <ProductPrice>${product.price}</ProductPrice>
-                    <p style={{ color: 'var(--gray)', fontSize: 'var(--font-sm)' }}>
-                      {product.category?.name || product.category} • {product.status}
-                    </p>
+                    <div style={{ marginBottom: 'var(--spacing-sm)' }}>
+                      <p style={{ color: 'var(--gray)', fontSize: 'var(--font-sm)', marginBottom: 'var(--spacing-xs)' }}>
+                        {product.category?.name || product.category}
+                      </p>
+                      <div style={{ marginBottom: 'var(--spacing-xs)' }}>
+                        <StatusBadge className={product.approvalStatus || 'pending'}>
+                          {product.approvalStatus === 'pending' && 'Pending Approval'}
+                          {product.approvalStatus === 'approved' && 'Approved'}
+                          {product.approvalStatus === 'rejected' && 'Rejected'}
+                          {!product.approvalStatus && product.status}
+                        </StatusBadge>
+                      </div>
+                      {product.rejectionReason && (
+                        <p style={{ 
+                          color: '#721c24', 
+                          fontSize: 'var(--font-xs)', 
+                          background: '#f8d7da', 
+                          padding: 'var(--spacing-xs)', 
+                          borderRadius: 'var(--radius-sm)',
+                          marginTop: 'var(--spacing-xs)'
+                        }}>
+                          Rejection reason: {product.rejectionReason}
+                        </p>
+                      )}
+                    </div>
                     <p style={{ color: 'var(--gray)', fontSize: 'var(--font-sm)' }}>
                       Stock: {product.inventory?.quantity || product.quantity || 0}
                     </p>
