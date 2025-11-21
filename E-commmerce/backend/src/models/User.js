@@ -127,16 +127,6 @@ const userSchema = new mongoose.Schema({
         default: Date.now
       }
     }],
-    rating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5
-    },
-    totalReviews: {
-      type: Number,
-      default: 0
-    },
     totalSales: {
       type: Number,
       default: 0

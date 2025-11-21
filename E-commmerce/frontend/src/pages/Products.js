@@ -315,7 +315,13 @@ const Products = () => {
     // Get category from URL parameters
     const categoryQuery = searchParams.get('category');
     if (categoryQuery) {
-      setSelectedCategory(categoryQuery);
+      // Capitalize the category name for proper display and filtering
+      const formattedCategory = categoryQuery
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+        .replace('&', '&'); // Handle "Art & Prints"
+      setSelectedCategory(formattedCategory);
     }
     
     fetchProducts();
@@ -369,7 +375,10 @@ const Products = () => {
 
     // Filter by category
     if (selectedCategory && selectedCategory !== 'All Categories') {
-      filtered = filtered.filter(product => (product.category?.name || product.category) === selectedCategory);
+      filtered = filtered.filter(product => {
+        const productCategory = (product.category?.name || product.category);
+        return productCategory?.toLowerCase() === selectedCategory.toLowerCase();
+      });
     }
 
     setFilteredProducts(filtered);

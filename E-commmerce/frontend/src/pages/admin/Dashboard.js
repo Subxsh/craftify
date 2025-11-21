@@ -8,22 +8,15 @@ import {
   FiUsers, 
   FiShoppingCart, 
   FiDollarSign, 
-  FiBarChart2, 
   FiSettings,
   FiLogOut,
   FiSearch,
-  FiFilter,
-  FiPlus,
   FiEdit,
   FiTrash2,
   FiEye,
-  FiCheckCircle,
   FiXCircle,
   FiClock,
-  FiTruck,
-  FiUser,
-  FiTag,
-  FiChevronDown
+  FiCheck
 } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 import productService from '../../services/productService';
@@ -305,9 +298,90 @@ const StatusBadge = styled.span`
   }
 `;
 
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  margin: var(--spacing-lg);
+`;
+
+const ModalHeader = styled.div`
+  padding: var(--spacing-xl);
+  border-bottom: 1px solid var(--light-gray);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ModalBody = styled.div`
+  padding: var(--spacing-xl);
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--gray);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  
+  &:hover {
+    color: var(--dark-gray);
+  }
+`;
+
+const ProductDetailGrid = styled.div`
+  display: grid;
+  gap: var(--spacing-lg);
+`;
+
+const ProductDetailItem = styled.div`
+  h4 {
+    color: var(--dark-gray);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-sm);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  
+  p {
+    color: var(--gray);
+    line-height: 1.5;
+  }
+`;
+
+const ProductImageModal = styled.div`
+  width: 100%;
+  height: 200px;
+  background: var(--light-gray);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--gray);
+  margin-bottom: var(--spacing-lg);
+`;
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -321,6 +395,8 @@ const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [demandProducts, setDemandProducts] = useState([]); // New state for demand products
   const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showProductModal, setShowProductModal] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -428,8 +504,8 @@ const Dashboard = () => {
   // Product actions
   const handleViewProduct = (product) => {
     console.log('View product:', product);
-    // Navigate to the product detail page
-    navigate(`/product/${product._id}`);
+    setSelectedProduct(product);
+    setShowProductModal(true);
   };
 
   const handleEditProduct = (product) => {
@@ -765,20 +841,44 @@ const Dashboard = () => {
                     </TableCell>
                     <TableCell>
                       <ActionButton 
-                        style={{ background: 'var(--success-color)', color: 'white', marginRight: '8px' }}
+                        style={{ 
+                          background: '#28a745', 
+                          color: 'white', 
+                          marginRight: '8px',
+                          border: 'none',
+                          minWidth: '40px',
+                          height: '36px'
+                        }}
                         onClick={() => handleApproveProduct(product)}
                         title="Approve Product"
                       >
-                        <FiCheckCircle />
+                        <FiCheck />
                       </ActionButton>
                       <ActionButton 
-                        style={{ background: 'var(--danger-color)', color: 'white', marginRight: '8px' }}
+                        style={{ 
+                          background: '#dc3545', 
+                          color: 'white', 
+                          marginRight: '8px',
+                          border: 'none',
+                          minWidth: '40px',
+                          height: '36px'
+                        }}
                         onClick={() => handleRejectProduct(product)}
                         title="Reject Product"
                       >
                         <FiXCircle />
                       </ActionButton>
-                      <ActionButton onClick={() => handleViewProduct(product)} title="View Product">
+                      <ActionButton 
+                        style={{ 
+                          background: '#007bff', 
+                          color: 'white',
+                          border: 'none',
+                          minWidth: '40px',
+                          height: '36px'
+                        }}
+                        onClick={() => handleViewProduct(product)} 
+                        title="View Product"
+                      >
                         <FiEye />
                       </ActionButton>
                     </TableCell>
@@ -948,6 +1048,94 @@ const Dashboard = () => {
           </Section>
         )}
       </MainContent>
+
+      {/* Product Detail Modal */}
+      {showProductModal && selectedProduct && (
+        <Modal onClick={() => setShowProductModal(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <h2>Product Details</h2>
+              <CloseButton onClick={() => setShowProductModal(false)}>
+                ×
+              </CloseButton>
+            </ModalHeader>
+            <ModalBody>
+              <ProductImageModal>
+                {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                  <img 
+                    src={selectedProduct.images[0].url} 
+                    alt={selectedProduct.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--radius-md)' }}
+                  />
+                ) : (
+                  '🎁'
+                )}
+              </ProductImageModal>
+              
+              <ProductDetailGrid>
+                <ProductDetailItem>
+                  <h4>Product Name</h4>
+                  <p>{selectedProduct.name}</p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Description</h4>
+                  <p>{selectedProduct.description}</p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Price</h4>
+                  <p>${selectedProduct.price?.toFixed(2) || '0.00'}</p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Category</h4>
+                  <p>{selectedProduct.category?.name || selectedProduct.category}</p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Seller</h4>
+                  <p>
+                    {selectedProduct.seller?.sellerProfile?.businessName || 
+                     `${selectedProduct.seller?.firstName} ${selectedProduct.seller?.lastName}`}
+                    <br />
+                    <span style={{ fontSize: '0.9em', color: 'var(--gray)' }}>
+                      {selectedProduct.seller?.email}
+                    </span>
+                  </p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Approval Status</h4>
+                  <p style={{ 
+                    color: selectedProduct.approvalStatus === 'pending' ? '#856404' : 
+                           selectedProduct.approvalStatus === 'approved' ? '#155724' : '#721c24'
+                  }}>
+                    {selectedProduct.approvalStatus?.toUpperCase() || 'PENDING'}
+                  </p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Inventory</h4>
+                  <p>{selectedProduct.inventory?.quantity || selectedProduct.quantity || 0} units</p>
+                </ProductDetailItem>
+                
+                <ProductDetailItem>
+                  <h4>Submitted Date</h4>
+                  <p>{new Date(selectedProduct.createdAt).toLocaleString()}</p>
+                </ProductDetailItem>
+                
+                {selectedProduct.rejectionReason && (
+                  <ProductDetailItem>
+                    <h4>Rejection Reason</h4>
+                    <p style={{ color: '#721c24' }}>{selectedProduct.rejectionReason}</p>
+                  </ProductDetailItem>
+                )}
+              </ProductDetailGrid>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </DashboardContainer>
   );
 };
