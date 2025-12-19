@@ -267,7 +267,9 @@ const ProductDetail = () => {
     }
   }, [user, token, id]);
 
-  const handleReviewClick = () => {
+  const handleReviewClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('✅ Review button click handler called');
     console.log('Current state - showReviewForm:', showReviewForm);
     console.log('purchasedOrder:', purchasedOrder);
@@ -571,6 +573,8 @@ const ProductDetail = () => {
         {/* Review Form - Show if user purchased this product */}
         {purchasedOrder && (
           <div style={{ marginTop: 'var(--spacing-2xl)', padding: 'var(--spacing-2xl)', background: 'var(--white)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--spacing-2xl)' }}>
+            <p style={{ margin: '0 0 var(--spacing-lg) 0', color: 'var(--gray)' }}>You purchased this product! Share your experience below.</p>
+            
             {!showReviewForm && (
               <button
                 onClick={handleReviewClick}
