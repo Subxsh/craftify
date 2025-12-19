@@ -236,17 +236,22 @@ const ProductDetail = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('📦 Orders fetched:', response.data);
-      setUserOrders(response.data);
+      console.log('📦 Orders response:', response);
+      
+      // Handle both response.data.data and response.data directly
+      const orders = response.data.data || response.data;
+      console.log('📦 Orders fetched:', orders);
+      setUserOrders(orders);
       
       // Find if user has purchased this product in a delivered order
-      const order = response.data.find(order => {
+      const order = orders.find(order => {
+        console.log(`🔍 Checking order ${order._id}: status=${order.status}`);
         if (order.status !== 'delivered') return false;
         
         return order.items.some(item => {
           const itemProductId = (item.product._id || item.product)?.toString();
           const currentId = id?.toString();
-          console.log(`🔍 Comparing: ${itemProductId} === ${currentId}`);
+          console.log(`   Comparing item: ${itemProductId} === ${currentId} ?`);
           return itemProductId === currentId;
         });
       });
@@ -254,6 +259,8 @@ const ProductDetail = () => {
       console.log('✅ Purchased order:', order);
       if (order) {
         setPurchasedOrder(order);
+      } else {
+        console.log('❌ No delivered order found for this product');
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
