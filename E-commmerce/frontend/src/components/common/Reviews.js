@@ -318,7 +318,7 @@ const Reviews = ({ productId, onWriteReview }) => {
   return (
     <ReviewsContainer>
       <ReviewsHeader>
-        <Title>Customer Reviews</Title>
+        <Title>Customer Reviews & Ratings</Title>
         <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
           <WriteReviewButton onClick={onWriteReview}>
             Write a Review
