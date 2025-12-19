@@ -226,24 +226,32 @@ const ProductDetail = () => {
   }, [id]);
 
   const checkUserPurchase = useCallback(async () => {
-    if (!user || !token) return;
+    if (!user || !token) {
+      console.log('❌ No user or token');
+      return;
+    }
     
     try {
       const response = await axios.get('/api/orders', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('📦 Orders fetched:', response.data);
       setUserOrders(response.data);
       
       // Find if user has purchased this product in a delivered order
-      const order = response.data.find(order => 
-        order.status === 'delivered' && 
-        order.items.some(item => {
-          const productId = item.product._id || item.product;
-          return productId === id;
-        })
-      );
+      const order = response.data.find(order => {
+        if (order.status !== 'delivered') return false;
+        
+        return order.items.some(item => {
+          const itemProductId = (item.product._id || item.product)?.toString();
+          const currentId = id?.toString();
+          console.log(`🔍 Comparing: ${itemProductId} === ${currentId}`);
+          return itemProductId === currentId;
+        });
+      });
       
+      console.log('✅ Purchased order:', order);
       if (order) {
         setPurchasedOrder(order);
       }
@@ -543,10 +551,13 @@ const ProductDetail = () => {
 
         {/* Review Form - Show if user purchased this product */}
         {purchasedOrder && (
-          <div style={{ marginTop: 'var(--spacing-2xl)' }}>
+          <div style={{ marginTop: 'var(--spacing-2xl)', padding: 'var(--spacing-2xl)', background: 'var(--white)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--spacing-2xl)' }}>
             {!showReviewForm && (
               <button
-                onClick={() => setShowReviewForm(true)}
+                onClick={() => {
+                  console.log('📝 Review button clicked!');
+                  setShowReviewForm(true);
+                }}
                 style={{
                   padding: 'var(--spacing-md) var(--spacing-xl)',
                   background: 'var(--accent-color)',
@@ -559,8 +570,11 @@ const ProductDetail = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--spacing-sm)',
-                  marginBottom: 'var(--spacing-lg)'
+                  marginBottom: 'var(--spacing-lg)',
+                  transition: 'all var(--transition-fast)'
                 }}
+                onMouseEnter={(e) => e.target.style.background = '#ff9800'}
+                onMouseLeave={(e) => e.target.style.background = 'var(--accent-color)'}
               >
                 <FiStar size={18} /> Write a Review
               </button>
@@ -572,8 +586,12 @@ const ProductDetail = () => {
                 orderId={purchasedOrder._id}
                 productName={product?.name}
                 token={token}
-                onClose={() => setShowReviewForm(false)}
+                onClose={() => {
+                  console.log('Closing review form');
+                  setShowReviewForm(false);
+                }}
                 onSuccess={() => {
+                  console.log('Review submitted successfully');
                   setShowReviewForm(false);
                   setReviewsKey(reviewsKey + 1);
                 }}
