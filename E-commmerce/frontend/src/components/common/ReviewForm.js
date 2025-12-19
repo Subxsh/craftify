@@ -210,23 +210,24 @@ const InfoMessage = styled.p`
 
 const ReviewForm = ({ 
   productId, 
+  orderId: initialOrderId = null,
   onClose, 
   onSuccess, 
   initialReview = null,
   token 
 }) => {
-  const [orderId, setOrderId] = useState(initialReview?.order || '');
+  const [orderId, setOrderId] = useState(initialOrderId || initialReview?.order || '');
   const [pendingReviews, setPendingReviews] = useState([]);
   const [rating, setRating] = useState(initialReview?.rating || 0);
   const [title, setTitle] = useState(initialReview?.title || '');
   const [comment, setComment] = useState(initialReview?.comment || '');
   const [loading, setLoading] = useState(false);
-  const [fetchingOrders, setFetchingOrders] = useState(!initialReview);
+  const [fetchingOrders, setFetchingOrders] = useState(!initialReview && !initialOrderId);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    if (!initialReview) {
+    if (!initialReview && !initialOrderId) {
       fetchPendingReviews();
     }
   }, []);
@@ -338,7 +339,7 @@ const ReviewForm = ({
         </ModalHeader>
 
         <form onSubmit={handleSubmit}>
-          {!initialReview && pendingReviews.length > 0 && (
+          {!initialReview && !initialOrderId && pendingReviews.length > 0 && (
             <FormGroup>
               <Label htmlFor="order">Select Order *</Label>
               <Select

@@ -571,6 +571,7 @@ const ProductDetail = () => {
                 productId={id}
                 orderId={purchasedOrder._id}
                 productName={product?.name}
+                token={token}
                 onClose={() => setShowReviewForm(false)}
                 onSuccess={() => {
                   setShowReviewForm(false);
