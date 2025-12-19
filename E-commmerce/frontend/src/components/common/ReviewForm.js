@@ -283,12 +283,14 @@ const ReviewForm = ({
       setLoading(true);
 
       const reviewData = {
-        productId,
-        orderId,
+        productId: productId?.toString ? productId.toString() : productId,
+        orderId: orderId?.toString ? orderId.toString() : orderId,
         rating,
         title: title.trim(),
         comment: comment.trim()
       };
+
+      console.log('📝 Submitting review:', reviewData);
 
       if (initialReview) {
         await reviewService.updateReview(initialReview._id, reviewData, token);
@@ -303,8 +305,10 @@ const ReviewForm = ({
         onClose();
       }, 1500);
     } catch (err) {
-      setError(err.message || 'Failed to submit review');
-      console.error('Error:', err);
+      console.error('❌ Error submitting review:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to submit review';
+      setError(errorMessage);
+      console.error('Full error:', err);
     } finally {
       setLoading(false);
     }

@@ -604,7 +604,7 @@ const ProductDetail = () => {
             {showReviewForm && (
               <ReviewForm 
                 productId={id}
-                orderId={purchasedOrder._id}
+                orderId={purchasedOrder?._id?.toString()}
                 productName={product?.name}
                 token={token}
                 onClose={() => {
