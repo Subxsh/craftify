@@ -220,6 +220,21 @@ const LoadingState = styled.div`
   color: var(--gray);
 `;
 
+const WriteReviewButton = styled.button`
+  background: var(--primary-color);
+  color: var(--white);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--primary-dark);
+  }
+`;
+
 const Reviews = ({ productId, onWriteReview }) => {
   const { user, token } = useAuth();
   const [reviews, setReviews] = useState([]);
@@ -305,6 +320,9 @@ const Reviews = ({ productId, onWriteReview }) => {
       <ReviewsHeader>
         <Title>Customer Reviews</Title>
         <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
+          <WriteReviewButton onClick={onWriteReview}>
+            Write a Review
+          </WriteReviewButton>
           <SortSelect value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="recent">Most Recent</option>
             <option value="helpful">Most Helpful</option>

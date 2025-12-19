@@ -107,13 +107,13 @@ const cartService = {
       if (response.data?.success) {
         const data = response.data;
         const items = data.cart?.items || data.items || data.data?.items || [];
-        const totalItems = data.totalItems || data.data?.totalItems || (items.reduce ? items.reduce((s, i) => s + (i.quantity || 0), 0) : 0);
-        const totalAmount = data.totalAmount || data.totalPrice || data.data?.totalPrice || 0;
+        const totalItems = data.cart?.totalItems || data.totalItems || data.data?.totalItems || (items.reduce ? items.reduce((s, i) => s + (i.quantity || 0), 0) : 0);
+        const totalAmount = data.cart?.totalAmount || data.totalAmount || data.totalPrice || data.data?.totalPrice || data.data?.totalAmount || 0;
 
         return {
           items: items.map(item => item.product ? item : (item.productId ? { product: { _id: item.productId }, quantity: item.quantity } : item)),
           totalItems,
-          totalAmount
+          totalAmount: typeof totalAmount === 'number' ? parseFloat(totalAmount) : 0
         };
       } else {
         throw new Error(response.data?.message || 'Failed to remove item from cart');
@@ -141,13 +141,13 @@ const cartService = {
       if (response.data?.success) {
         const data = response.data;
         const items = data.cart?.items || data.items || data.data?.items || [];
-        const totalItems = data.totalItems || data.data?.totalItems || (items.reduce ? items.reduce((s, i) => s + (i.quantity || 0), 0) : 0);
-        const totalAmount = data.totalAmount || data.totalPrice || data.data?.totalPrice || 0;
+        const totalItems = data.cart?.totalItems || data.totalItems || data.data?.totalItems || (items.reduce ? items.reduce((s, i) => s + (i.quantity || 0), 0) : 0);
+        const totalAmount = data.cart?.totalAmount || data.totalAmount || data.totalPrice || data.data?.totalPrice || data.data?.totalAmount || 0;
 
         return {
           items: items.map(item => item.product ? item : (item.productId ? { product: { _id: item.productId }, quantity: item.quantity } : item)),
           totalItems,
-          totalAmount
+          totalAmount: typeof totalAmount === 'number' ? parseFloat(totalAmount) : 0
         };
       } else {
         throw new Error(response.data?.message || 'Failed to update cart item');
