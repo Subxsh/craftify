@@ -347,7 +347,7 @@ const Home = () => {
             {categories.map((category, index) => (
               <CategoryCard
                 key={index}
-                to={`/products?category=${category.name.toLowerCase()}`}
+                to={`/products?category=${category.name}`}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}

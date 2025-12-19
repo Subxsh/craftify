@@ -74,6 +74,7 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/cart', require('./routes/cart'));
 app.use('/api/purchase', require('./routes/purchase'));
+app.use('/api/reviews', require('./routes/reviews'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

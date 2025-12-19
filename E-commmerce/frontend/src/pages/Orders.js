@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FiPackage, FiCalendar, FiDollarSign, FiEye, FiArrowLeft } from 'react-icons/fi';
+import { FiPackage, FiCalendar, FiDollarSign, FiEye, FiArrowLeft, FiStar, FiX } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import getImageUrl from '../utils/getImageUrl';
+import ReviewForm from '../components/common/ReviewForm';
 import axios from 'axios';
 
 const OrdersContainer = styled.div`
@@ -147,6 +149,13 @@ const OrderItem = styled.div`
   padding: var(--spacing-md);
   background: var(--light-gray);
   border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--gray);
+    box-shadow: var(--shadow-md);
+  }
 `;
 
 const ItemImage = styled.div`
@@ -185,6 +194,34 @@ const ItemPrice = styled.div`
   text-align: right;
   color: var(--primary-color);
   font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+`;
+
+const ReviewButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--accent-color);
+  color: var(--white);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 600;
+
+  &:hover {
+    background: #ff9800;
+  }
+
+  &:disabled {
+    background: var(--gray);
+    cursor: not-allowed;
+  }
 `;
 
 const EmptyState = styled.div`
@@ -211,11 +248,147 @@ const LoadingState = styled.div`
   color: var(--gray);
 `;
 
+const ProductModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: var(--spacing-md);
+`;
+
+const ProductModalContent = styled.div`
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ProductModalImage = styled.div`
+  background: linear-gradient(45deg, var(--primary-light), var(--secondary-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6rem;
+  color: var(--white);
+  min-height: 300px;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+
+  @media (max-width: 768px) {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    min-height: 200px;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const ProductModalBody = styled.div`
+  padding: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+`;
+
+const ProductModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+`;
+
+const ProductModalTitle = styled.h2`
+  margin: 0;
+  color: var(--dark-gray);
+  font-size: var(--font-2xl);
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: var(--font-xl);
+  color: var(--gray);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--dark-gray);
+  }
+`;
+
+const ProductModalPrice = styled.div`
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--primary-color);
+`;
+
+const ProductModalDescription = styled.p`
+  color: var(--gray);
+  line-height: 1.6;
+  margin: 0;
+`;
+
+const ProductModalCategory = styled.div`
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  color: var(--gray);
+  font-size: var(--font-sm);
+`;
+
+const ReviewButtonInModal = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background: var(--accent-color);
+  color: var(--white);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-base);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 600;
+  width: 100%;
+
+  &:hover {
+    background: #ff9800;
+  }
+`;
+
 const Orders = () => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     if (user && token) {
@@ -245,9 +418,7 @@ const Orders = () => {
   const getProductImage = (product) => {
     if (product.images && product.images.length > 0) {
       const mainImage = product.images.find(img => img.isMain) || product.images[0];
-      // Handle both image objects and string URLs
-      const imageUrl = mainImage.url || mainImage;
-      return imageUrl.startsWith('http') ? imageUrl : `/api${imageUrl}`;
+      return getImageUrl(mainImage);
     }
     return null;
   };
@@ -328,7 +499,16 @@ const Orders = () => {
                 <OrderItems>
                   <ItemsList>
                     {order.items.map((item, itemIndex) => (
-                      <OrderItem key={itemIndex}>
+                      <OrderItem 
+                        key={itemIndex}
+                        onClick={() => setSelectedProduct({
+                          ...item.product,
+                          orderId: order._id,
+                          orderStatus: order.status,
+                          quantity: item.quantity,
+                          itemName: item.name || item.product?.name
+                        })}
+                      >
                         <ItemImage $imageUrl={getProductImage(item.product)}>
                           {!getProductImage(item.product) && getProductEmoji(item.product?.category?.name || item.product?.category)}
                         </ItemImage>
@@ -343,7 +523,7 @@ const Orders = () => {
                         </ItemQuantity>
                         
                         <ItemPrice>
-                          Rs.{(item.subtotal || (item.price * item.quantity)).toFixed(2)}
+                          <div>Rs.{(item.subtotal || (item.price * item.quantity)).toFixed(2)}</div>
                         </ItemPrice>
                       </OrderItem>
                     ))}
@@ -372,6 +552,73 @@ const Orders = () => {
               Start Shopping
             </button>
           </EmptyState>
+        )}
+
+        {/* Review Form Modal */}
+        {showReviewForm && selectedReview && (
+          <ReviewForm
+            productId={selectedReview.productId}
+            orderId={selectedReview.orderId}
+            token={token}
+            onClose={() => {
+              setShowReviewForm(false);
+              setSelectedReview(null);
+            }}
+            onSuccess={() => {
+              // Refresh orders to show updated review status if needed
+              fetchOrders();
+            }}
+          />
+        )}
+
+        {/* Product Detail Modal */}
+        {selectedProduct && (
+          <ProductModal onClick={() => setSelectedProduct(null)}>
+            <ProductModalContent onClick={(e) => e.stopPropagation()}>
+              <ProductModalHeader>
+                <ProductModalTitle>{selectedProduct.itemName || selectedProduct.name}</ProductModalTitle>
+                <CloseButton onClick={() => setSelectedProduct(null)}>
+                  <FiX size={24} />
+                </CloseButton>
+              </ProductModalHeader>
+
+              <ProductModalImage $imageUrl={getProductImage(selectedProduct)}>
+                {!getProductImage(selectedProduct) && getProductEmoji(selectedProduct.category?.name || selectedProduct.category)}
+              </ProductModalImage>
+
+              <ProductModalBody>
+                <ProductModalPrice>Rs.{selectedProduct.price?.toFixed(2) || '0.00'}</ProductModalPrice>
+                
+                {selectedProduct.category && (
+                  <ProductModalCategory>
+                    Category: {selectedProduct.category?.name || selectedProduct.category}
+                  </ProductModalCategory>
+                )}
+
+                {selectedProduct.description && (
+                  <ProductModalDescription>
+                    {selectedProduct.description}
+                  </ProductModalDescription>
+                )}
+
+                {selectedProduct.orderStatus === 'delivered' && (
+                  <ReviewButtonInModal 
+                    onClick={() => {
+                      setSelectedReview({
+                        orderId: selectedProduct.orderId,
+                        productId: selectedProduct._id,
+                        productName: selectedProduct.itemName || selectedProduct.name
+                      });
+                      setShowReviewForm(true);
+                      setSelectedProduct(null);
+                    }}
+                  >
+                    <FiStar size={16} /> Write Review
+                  </ReviewButtonInModal>
+                )}
+              </ProductModalBody>
+            </ProductModalContent>
+          </ProductModal>
         )}
       </div>
     </OrdersContainer>

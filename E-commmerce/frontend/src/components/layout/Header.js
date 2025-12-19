@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiHeart } from 'react-icons/fi';
@@ -228,10 +228,23 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const userMenuRef = useRef(null);
   
   const { user, logout } = useAuth();
   const { getCartItemCount } = useCart();
   const navigate = useNavigate();
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -284,11 +297,11 @@ const Header = () => {
                 <FiSearch />
               </MobileMenuButton>
 
-              <ActionButton as={Link} to="/wishlist">
+              <ActionButton as={Link} to="/wishlist" onClick={() => setIsUserMenuOpen(false)}>
                 <FiHeart />
               </ActionButton>
 
-              <ActionButton as={Link} to="/cart">
+              <ActionButton as={Link} to="/cart" onClick={() => setIsUserMenuOpen(false)}>
                 <FiShoppingCart />
                 {getCartItemCount() > 0 && (
                   <CartBadge>{getCartItemCount()}</CartBadge>
@@ -296,20 +309,20 @@ const Header = () => {
               </ActionButton>
 
               {user ? (
-                <UserMenu>
+                <UserMenu ref={userMenuRef}>
                   <UserButton
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   >
                     <FiUser />
                   </UserButton>
                   <DropdownMenu isOpen={isUserMenuOpen}>
-                    <DropdownItem to="/profile">My Profile</DropdownItem>
-                    <DropdownItem to="/orders">My Orders</DropdownItem>
+                    <DropdownItem to="/profile" onClick={() => setIsUserMenuOpen(false)}>My Profile</DropdownItem>
+                    <DropdownItem to="/orders" onClick={() => setIsUserMenuOpen(false)}>My Orders</DropdownItem>
                     {user.role === 'seller' && (
-                      <DropdownItem to="/seller">Seller Dashboard</DropdownItem>
+                      <DropdownItem to="/seller" onClick={() => setIsUserMenuOpen(false)}>Seller Dashboard</DropdownItem>
                     )}
                     {user.role === 'admin' && (
-                      <DropdownItem to="/admin">Admin Panel</DropdownItem>
+                      <DropdownItem to="/admin" onClick={() => setIsUserMenuOpen(false)}>Admin Panel</DropdownItem>
                     )}
                     <DropdownButton onClick={handleLogout}>
                       Logout

@@ -7,6 +7,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import productService from '../services/productService';
 import getImageUrl from '../utils/getImageUrl';
+import Reviews from '../components/common/Reviews';
 
 const ProductDetailContainer = styled.div`
   padding: var(--spacing-2xl) 0;
@@ -192,7 +193,7 @@ const DetailValue = styled.span`
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, token } = useAuth();
   const { addToCart, buyNow } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -201,6 +202,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [purchasing, setPurchasing] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [reviewsKey, setReviewsKey] = useState(0);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -502,6 +504,16 @@ const ProductDetail = () => {
             )}
           </ProductInfo>
         </ProductContent>
+
+        {/* Reviews Section */}
+        <Reviews 
+          key={reviewsKey}
+          productId={id} 
+          onWriteReview={() => {
+            alert('Please go to Your Orders page to write a review for products you have purchased');
+            navigate('/orders');
+          }}
+        />
       </div>
     </ProductDetailContainer>
   );
