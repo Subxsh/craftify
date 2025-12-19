@@ -8,6 +8,8 @@ import { useAuth } from '../contexts/AuthContext';
 import productService from '../services/productService';
 import getImageUrl from '../utils/getImageUrl';
 import Reviews from '../components/common/Reviews';
+import ReviewForm from '../components/common/ReviewForm';
+import axios from 'axios';
 
 const ProductDetailContainer = styled.div`
   padding: var(--spacing-2xl) 0;
@@ -203,6 +205,9 @@ const ProductDetail = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [reviewsKey, setReviewsKey] = useState(0);
+  const [userOrders, setUserOrders] = useState([]);
+  const [purchasedOrder, setPurchasedOrder] = useState(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -220,11 +225,42 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  const checkUserPurchase = useCallback(async () => {
+    if (!user || !token) return;
+    
+    try {
+      const response = await axios.get('/api/orders', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setUserOrders(response.data);
+      
+      // Find if user has purchased this product in a delivered order
+      const order = response.data.find(order => 
+        order.status === 'delivered' && 
+        order.items.some(item => {
+          const productId = item.product._id || item.product;
+          return productId === id;
+        })
+      );
+      
+      if (order) {
+        setPurchasedOrder(order);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  }, [user, token, id]);
+
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
   }, [id, fetchProduct]);
+
+  useEffect(() => {
+    checkUserPurchase();
+  }, [checkUserPurchase]);
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -505,14 +541,50 @@ const ProductDetail = () => {
           </ProductInfo>
         </ProductContent>
 
+        {/* Review Form - Show if user purchased this product */}
+        {purchasedOrder && (
+          <div style={{ marginTop: 'var(--spacing-2xl)' }}>
+            {!showReviewForm && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                style={{
+                  padding: 'var(--spacing-md) var(--spacing-xl)',
+                  background: 'var(--accent-color)',
+                  color: 'var(--white)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--font-base)',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--spacing-sm)',
+                  marginBottom: 'var(--spacing-lg)'
+                }}
+              >
+                <FiStar size={18} /> Write a Review
+              </button>
+            )}
+            
+            {showReviewForm && (
+              <ReviewForm 
+                productId={id}
+                orderId={purchasedOrder._id}
+                productName={product?.name}
+                onClose={() => setShowReviewForm(false)}
+                onSuccess={() => {
+                  setShowReviewForm(false);
+                  setReviewsKey(reviewsKey + 1);
+                }}
+              />
+            )}
+          </div>
+        )}
+
         {/* Reviews Section */}
         <Reviews 
           key={reviewsKey}
-          productId={id} 
-          onWriteReview={() => {
-            alert('Please go to Your Orders page to write a review for products you have purchased');
-            navigate('/orders');
-          }}
+          productId={id}
         />
       </div>
     </ProductDetailContainer>

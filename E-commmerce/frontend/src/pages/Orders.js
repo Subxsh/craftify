@@ -395,7 +395,6 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     if (user && token) {
@@ -508,13 +507,7 @@ const Orders = () => {
                     {order.items.map((item, itemIndex) => (
                       <OrderItem 
                         key={itemIndex}
-                        onClick={() => setSelectedProduct({
-                          ...item.product,
-                          orderId: order._id,
-                          orderStatus: order.status,
-                          quantity: item.quantity,
-                          itemName: item.name || item.product?.name
-                        })}
+                        onClick={() => navigate(`/product/${item.product._id || item.product}`)}
                       >
                         <ItemImage $imageUrl={getProductImage(item.product)}>
                           {!getProductImage(item.product) && getProductEmoji(item.product?.category?.name || item.product?.category)}
@@ -576,56 +569,6 @@ const Orders = () => {
               fetchOrders();
             }}
           />
-        )}
-
-        {/* Product Detail Modal */}
-        {selectedProduct && (
-          <ProductModal onClick={() => setSelectedProduct(null)}>
-            <ProductModalContent onClick={(e) => e.stopPropagation()}>
-              <ProductModalHeader>
-                <ProductModalTitle>{selectedProduct.itemName || selectedProduct.name}</ProductModalTitle>
-                <CloseButton onClick={() => setSelectedProduct(null)}>
-                  <FiX size={24} />
-                </CloseButton>
-              </ProductModalHeader>
-
-              <ProductModalImage $imageUrl={getProductImage(selectedProduct)}>
-                {!getProductImage(selectedProduct) && getProductEmoji(selectedProduct.category?.name || selectedProduct.category)}
-              </ProductModalImage>
-
-              <ProductModalBody>
-                <ProductModalPrice>Rs.{selectedProduct.price?.toFixed(2) || '0.00'}</ProductModalPrice>
-                
-                {selectedProduct.category && (
-                  <ProductModalCategory>
-                    Category: {selectedProduct.category?.name || selectedProduct.category}
-                  </ProductModalCategory>
-                )}
-
-                {selectedProduct.description && (
-                  <ProductModalDescription>
-                    {selectedProduct.description}
-                  </ProductModalDescription>
-                )}
-
-                {selectedProduct.orderStatus === 'delivered' && (
-                  <ReviewButtonInModal 
-                    onClick={() => {
-                      setSelectedReview({
-                        orderId: selectedProduct.orderId,
-                        productId: selectedProduct._id,
-                        productName: selectedProduct.itemName || selectedProduct.name
-                      });
-                      setShowReviewForm(true);
-                      setSelectedProduct(null);
-                    }}
-                  >
-                    <FiStar size={16} /> Write Review
-                  </ReviewButtonInModal>
-                )}
-              </ProductModalBody>
-            </ProductModalContent>
-          </ProductModal>
         )}
       </div>
     </OrdersContainer>
