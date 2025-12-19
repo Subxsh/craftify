@@ -267,6 +267,14 @@ const ProductDetail = () => {
     }
   }, [user, token, id]);
 
+  const handleReviewClick = () => {
+    console.log('✅ Review button click handler called');
+    console.log('Current state - showReviewForm:', showReviewForm);
+    console.log('purchasedOrder:', purchasedOrder);
+    setShowReviewForm(true);
+    console.log('State updated to showReviewForm: true');
+  };
+
   useEffect(() => {
     if (id) {
       fetchProduct();
@@ -276,6 +284,10 @@ const ProductDetail = () => {
   useEffect(() => {
     checkUserPurchase();
   }, [checkUserPurchase]);
+
+  useEffect(() => {
+    console.log('🔔 showReviewForm changed:', showReviewForm);
+  }, [showReviewForm]);
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -561,10 +573,7 @@ const ProductDetail = () => {
           <div style={{ marginTop: 'var(--spacing-2xl)', padding: 'var(--spacing-2xl)', background: 'var(--white)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--spacing-2xl)' }}>
             {!showReviewForm && (
               <button
-                onClick={() => {
-                  console.log('📝 Review button clicked!');
-                  setShowReviewForm(true);
-                }}
+                onClick={handleReviewClick}
                 style={{
                   padding: 'var(--spacing-md) var(--spacing-xl)',
                   background: 'var(--accent-color)',
