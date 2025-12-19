@@ -243,10 +243,11 @@ const ProductDetail = () => {
       console.log('📦 Orders fetched:', orders);
       setUserOrders(orders);
       
-      // Find if user has purchased this product in a delivered order
+      // Find if user has purchased this product in a delivered/confirmed order
       const order = orders.find(order => {
         console.log(`🔍 Checking order ${order._id}: status=${order.status}`);
-        if (order.status !== 'delivered') return false;
+        // Accept 'delivered' or 'confirmed' status
+        if (order.status !== 'delivered' && order.status !== 'confirmed') return false;
         
         return order.items.some(item => {
           const itemProductId = (item.product._id || item.product)?.toString();
@@ -625,26 +626,6 @@ const ProductDetail = () => {
           key={reviewsKey}
           productId={id}
         />
-
-        {/* DEBUG: Show status */}
-        <div style={{ marginTop: 'var(--spacing-2xl)', padding: 'var(--spacing-lg)', background: '#f0f0f0', borderRadius: 'var(--radius-lg)', fontSize: '12px', fontFamily: 'monospace' }}>
-          <p><strong>DEBUG INFO:</strong></p>
-          <p>User logged in: {user ? 'YES' : 'NO'}</p>
-          <p>Token exists: {token ? 'YES' : 'NO'}</p>
-          <p>Purchased order: {purchasedOrder ? 'YES - ' + purchasedOrder._id : 'NO'}</p>
-          <p>Show review form: {showReviewForm ? 'YES' : 'NO'}</p>
-          <p>User orders count: {userOrders.length}</p>
-          {userOrders.length > 0 && (
-            <div>
-              <p>Orders:</p>
-              {userOrders.map((order, idx) => (
-                <p key={idx}>
-                  Order {idx + 1}: Status={order.status}, Items={order.items?.length || 0}
-                </p>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </ProductDetailContainer>
   );
