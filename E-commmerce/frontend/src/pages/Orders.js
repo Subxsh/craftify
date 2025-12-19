@@ -265,33 +265,35 @@ const ProductModal = styled.div`
 const ProductModalContent = styled.div`
   background: var(--white);
   border-radius: var(--radius-lg);
-  max-width: 700px;
+  max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 0;
+  display: flex;
+  flex-direction: column;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    width: 95%;
+    max-height: 85vh;
   }
 `;
 
 const ProductModalImage = styled.div`
-  background: linear-gradient(45deg, var(--primary-light), var(--secondary-light));
+  background: ${props => props.$imageUrl 
+    ? `url(${props.$imageUrl}) center/cover no-repeat`
+    : 'linear-gradient(45deg, var(--primary-light), var(--secondary-light))'
+  };
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 6rem;
   color: var(--white);
-  min-height: 300px;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  min-height: 350px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 
   @media (max-width: 768px) {
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    min-height: 200px;
+    min-height: 250px;
   }
 
   img {
@@ -301,24 +303,19 @@ const ProductModalImage = styled.div`
   }
 `;
 
-const ProductModalBody = styled.div`
-  padding: var(--spacing-2xl);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-`;
-
 const ProductModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 `;
 
 const ProductModalTitle = styled.h2`
   margin: 0;
   color: var(--dark-gray);
   font-size: var(--font-2xl);
+  flex: 1;
 `;
 
 const CloseButton = styled.button`
@@ -334,10 +331,20 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all var(--transition-fast);
 
   &:hover {
     color: var(--dark-gray);
+    transform: scale(1.1);
   }
+`;
+
+const ProductModalBody = styled.div`
+  padding: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 `;
 
 const ProductModalPrice = styled.div`
