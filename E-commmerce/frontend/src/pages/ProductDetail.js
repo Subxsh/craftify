@@ -8,7 +8,6 @@ import { useAuth } from '../contexts/AuthContext';
 import productService from '../services/productService';
 import getImageUrl from '../utils/getImageUrl';
 import Reviews from '../components/common/Reviews';
-import ReviewForm from '../components/common/ReviewForm';
 import axios from 'axios';
 
 const ProductDetailContainer = styled.div`
@@ -207,7 +206,6 @@ const ProductDetail = () => {
   const [reviewsKey, setReviewsKey] = useState(0);
   const [userOrders, setUserOrders] = useState([]);
   const [purchasedOrder, setPurchasedOrder] = useState(null);
-  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -268,16 +266,6 @@ const ProductDetail = () => {
     }
   }, [user, token, id]);
 
-  const handleReviewClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('✅ Review button click handler called');
-    console.log('Current state - showReviewForm:', showReviewForm);
-    console.log('purchasedOrder:', purchasedOrder);
-    setShowReviewForm(true);
-    console.log('State updated to showReviewForm: true');
-  };
-
   useEffect(() => {
     if (id) {
       fetchProduct();
@@ -287,10 +275,6 @@ const ProductDetail = () => {
   useEffect(() => {
     checkUserPurchase();
   }, [checkUserPurchase]);
-
-  useEffect(() => {
-    console.log('🔔 showReviewForm changed:', showReviewForm);
-  }, [showReviewForm]);
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -570,56 +554,6 @@ const ProductDetail = () => {
             )}
           </ProductInfo>
         </ProductContent>
-
-        {/* Review Form - Show if user purchased this product */}
-        {purchasedOrder && (
-          <div style={{ marginTop: 'var(--spacing-2xl)', padding: 'var(--spacing-2xl)', background: 'var(--white)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--spacing-2xl)' }}>
-            <p style={{ margin: '0 0 var(--spacing-lg) 0', color: 'var(--gray)' }}>You purchased this product! Share your experience below.</p>
-            
-            {!showReviewForm && (
-              <button
-                onClick={handleReviewClick}
-                style={{
-                  padding: 'var(--spacing-md) var(--spacing-xl)',
-                  background: 'var(--accent-color)',
-                  color: 'var(--white)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  fontSize: 'var(--font-base)',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--spacing-sm)',
-                  marginBottom: 'var(--spacing-lg)',
-                  transition: 'all var(--transition-fast)'
-                }}
-                onMouseEnter={(e) => e.target.style.background = '#ff9800'}
-                onMouseLeave={(e) => e.target.style.background = 'var(--accent-color)'}
-              >
-                <FiStar size={18} /> Write a Review
-              </button>
-            )}
-            
-            {showReviewForm && (
-              <ReviewForm 
-                productId={id}
-                orderId={purchasedOrder._id}
-                productName={product?.name}
-                token={token}
-                onClose={() => {
-                  console.log('Closing review form');
-                  setShowReviewForm(false);
-                }}
-                onSuccess={() => {
-                  console.log('Review submitted successfully');
-                  setShowReviewForm(false);
-                  setReviewsKey(reviewsKey + 1);
-                }}
-              />
-            )}
-          </div>
-        )}
 
         {/* Reviews Section */}
         <Reviews 
