@@ -367,39 +367,7 @@ const Home = () => {
       </CategoriesSection>
 
       <TestimonialsSection>
-        <div className="container">
-          <SectionTitle>What Our Community Says</SectionTitle>
-          <SectionSubtitle>
-            Hear from our amazing customers and talented artisans
-          </SectionSubtitle>
-          <TestimonialsGrid>
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <StarsContainer>
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <FiStar key={i} fill="currentColor" />
-                  ))}
-                </StarsContainer>
-                <TestimonialText>"{testimonial.text}"</TestimonialText>
-                <TestimonialAuthor>
-                  <AuthorAvatar>
-                    {testimonial.author.split(' ').map(n => n[0]).join('')}
-                  </AuthorAvatar>
-                  <AuthorInfo>
-                    <h4>{testimonial.author}</h4>
-                    <p>{testimonial.role}</p>
-                  </AuthorInfo>
-                </TestimonialAuthor>
-              </TestimonialCard>
-            ))}
-          </TestimonialsGrid>
-        </div>
+        
       </TestimonialsSection>
     </HomeContainer>
   );

@@ -28,7 +28,6 @@ import NotFound from './pages/NotFound';
 
 // Protected Route Component
 import ProtectedRoute from './components/common/ProtectedRoute';
-import BackendStatus from './components/common/BackendStatus';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -44,7 +43,6 @@ const MainContent = styled.main`
 function App() {
   return (
     <AppContainer>
-      <BackendStatus />
       <Header />
       <MainContent>
         <Routes>
