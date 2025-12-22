@@ -8,6 +8,162 @@ const ProfileContainer = styled.div`
   background: linear-gradient(135deg, #f8f9fa 0%, #f0e8e0 100%);
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+`;
+
+const Button = styled.button`
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const PrimaryButton = styled(Button)`
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const SecondaryButton = styled(Button)`
+  background: var(--light-gray);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+
+  &:hover {
+    background: var(--primary-color);
+    color: var(--white);
+  }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: var(--spacing-lg);
+`;
+
+const Label = styled.label`
+  display: block;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--light-gray);
+  border-radius: var(--radius-md);
+  font-size: var(--font-base);
+  font-family: var(--font-primary);
+  transition: all var(--transition-normal);
+  background: var(--white);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+  }
+
+  &:disabled {
+    background: var(--light-gray);
+    cursor: not-allowed;
+  }
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+`;
+
+const SuccessMessage = styled.div`
+  background: #d4edda;
+  border: 2px solid var(--success);
+  color: #155724;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  animation: slideIn 0.3s ease-out;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const ErrorMessage = styled.div`
+  background: #f8d7da;
+  border: 2px solid var(--error);
+  color: #721c24;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  animation: slideIn 0.3s ease-out;
+`;
+
+const EditableSection = styled.div`
+  background: var(--white);
+  padding: var(--spacing-2xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-2xl);
+  border: 2px solid transparent;
+  transition: all var(--transition-normal);
+
+  &.editing {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+  }
+
+  h2 {
+    color: var(--primary-color);
+    font-family: var(--font-secondary);
+    margin-bottom: var(--spacing-xl);
+    font-size: var(--font-2xl);
+    border-bottom: 2px solid var(--accent-light);
+    padding-bottom: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
 const ProfileHeader = styled.div`
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: var(--white);
@@ -192,6 +348,15 @@ const LoadingSpinner = styled.div`
 const Profile = () => {
   const { user, loading } = useAuth();
   const [selectedCard, setSelectedCard] = useState(null);
+  const [isEditingPersonal, setIsEditingPersonal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  });
 
   const firstName = user?.firstName || user?.name?.split(' ')[0] || 'User';
   const email = user?.email || 'Not provided';
@@ -203,6 +368,98 @@ const Profile = () => {
       return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
     }
     return firstName[0].toUpperCase();
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+    setErrorMessage('');
+  };
+
+  const handleSavePersonal = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // Validate inputs
+      if (!formData.firstName.trim() || !formData.lastName.trim()) {
+        setErrorMessage('First name and last name are required');
+        return;
+      }
+
+      if (!formData.email.trim()) {
+        setErrorMessage('Email is required');
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setErrorMessage('Please enter a valid email address');
+        return;
+      }
+
+      // Get token from localStorage (matching AuthContext)
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setErrorMessage('Please login first to update your profile');
+        return;
+      }
+
+      // API call to update user profile
+      const response = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.errors?.[0] || 'Failed to update profile');
+      }
+
+      setSuccessMessage('Personal details updated successfully! 🎉');
+      setIsEditingPersonal(false);
+      
+      // Update form data with response
+      if (data.data) {
+        setFormData({
+          firstName: data.data.firstName || '',
+          lastName: data.data.lastName || '',
+          email: data.data.email || '',
+          phone: data.data.phone || '',
+        });
+      }
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setErrorMessage(error.message || 'Failed to update personal details. Please try again.');
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    });
+    setIsEditingPersonal(false);
+    setErrorMessage('');
   };
 
   if (loading) {
@@ -246,25 +503,89 @@ const Profile = () => {
         </ProfileGrid>
 
         <InfoSection>
-          <h2>Account Information</h2>
-          <InfoGrid>
-            <InfoItem>
-              <label>Full Name</label>
-              <span>{user?.firstName} {user?.lastName || ''}</span>
-            </InfoItem>
-            <InfoItem>
-              <label>Email Address</label>
-              <span>{email}</span>
-            </InfoItem>
-            <InfoItem>
-              <label>Phone Number</label>
-              <span>{phone}</span>
-            </InfoItem>
-            <InfoItem>
-              <label>Member Since</label>
-              <span>{joinDate}</span>
-            </InfoItem>
-          </InfoGrid>
+          <h2>
+            Account Information
+            <span onClick={() => setIsEditingPersonal(!isEditingPersonal)} style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
+              {isEditingPersonal ? '✕' : '✎'}
+            </span>
+          </h2>
+
+          {successMessage && <SuccessMessage>✓ {successMessage}</SuccessMessage>}
+          {errorMessage && <ErrorMessage>⚠ {errorMessage}</ErrorMessage>}
+
+          {isEditingPersonal ? (
+            <form onSubmit={handleSavePersonal}>
+              <FormGrid>
+                <FormGroup>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your first name"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your last name"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Enter your phone number"
+                  />
+                </FormGroup>
+              </FormGrid>
+              <ButtonGroup>
+                <PrimaryButton type="submit">💾 Save Changes</PrimaryButton>
+                <SecondaryButton type="button" onClick={handleCancel}>✕ Cancel</SecondaryButton>
+              </ButtonGroup>
+            </form>
+          ) : (
+            <InfoGrid>
+              <InfoItem>
+                <label>First Name</label>
+                <span>{user?.firstName || 'Not provided'}</span>
+              </InfoItem>
+              <InfoItem>
+                <label>Last Name</label>
+                <span>{user?.lastName || 'Not provided'}</span>
+              </InfoItem>
+              <InfoItem>
+                <label>Email Address</label>
+                <span>{email}</span>
+              </InfoItem>
+              <InfoItem>
+                <label>Phone Number</label>
+                <span>{phone}</span>
+              </InfoItem>
+            </InfoGrid>
+          )}
         </InfoSection>
 
         <InfoSection>
@@ -281,6 +602,10 @@ const Profile = () => {
             <InfoItem>
               <label>Account Type</label>
               <span style={{ textTransform: 'capitalize' }}>{user?.role || 'Customer'}</span>
+            </InfoItem>
+            <InfoItem>
+              <label>Member Since</label>
+              <span>{joinDate}</span>
             </InfoItem>
           </InfoGrid>
         </InfoSection>
