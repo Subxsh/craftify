@@ -170,10 +170,10 @@ const ActionButton = styled.button`
 
 const Wishlist = () => {
   const { items, removeFromWishlist } = useWishlist();
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
 
   const handleAddToCart = (product) => {
-    addItem(product, 1);
+    addToCart(product, 1);
   };
 
   const handleRemove = (productId) => {
@@ -223,7 +223,7 @@ const Wishlist = () => {
             >
               <ProductImage
                 to={`/product/${product._id}`}
-                $imageUrl={product.imageUrl ? getImageUrl(product.imageUrl) : null}
+                $imageUrl={product.images?.[0] ? getImageUrl(product.images[0]) : null}
               />
               <ProductBody>
                 <ProductName to={`/product/${product._id}`}>
