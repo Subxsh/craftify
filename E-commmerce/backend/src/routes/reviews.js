@@ -11,6 +11,14 @@ router.get('/product/:productId', async (req, res) => {
     const { productId } = req.params;
     const { page = 1, limit = 10, sortBy = 'recent' } = req.query;
 
+    // Validate productId
+    if (!productId || productId.length !== 24) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID'
+      });
+    }
+
     let sortOrder = { createdAt: -1 };
     if (sortBy === 'helpful') {
       sortOrder = { helpfulCount: -1, createdAt: -1 };
@@ -21,6 +29,7 @@ router.get('/product/:productId', async (req, res) => {
     }
 
     const skip = (page - 1) * limit;
+    const limitNum = Math.min(parseInt(limit) || 10, 100); // Cap limit at 100
 
     const reviews = await Review.find({
       product: productId,
@@ -29,24 +38,26 @@ router.get('/product/:productId', async (req, res) => {
       .populate('user', 'firstName lastName')
       .sort(sortOrder)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(limitNum)
+      .maxTimeMS(5000); // 5 second timeout
 
     const total = await Review.countDocuments({
       product: productId,
       isApproved: true
-    });
+    }).maxTimeMS(5000);
 
     res.status(200).json({
       success: true,
       data: reviews,
       pagination: {
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limitNum),
         currentPage: parseInt(page),
-        limit: parseInt(limit)
+        limit: limitNum
       }
     });
   } catch (error) {
+    console.error('❌ Error fetching reviews:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching reviews',

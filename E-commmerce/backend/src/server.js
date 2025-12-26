@@ -44,19 +44,44 @@ if (process.env.NODE_ENV === 'development') {
 // Database connection
 const connectDB = async () => {
   try {
-    // Add more robust connection options
+    // Add more robust connection options with NO auto-disconnect
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/craftify', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-      socketTimeoutMS: 45000, // Increase socket timeout
-      maxPoolSize: 10 // Limit pool size
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 0, // NO TIMEOUT - stays connected forever
+      maxPoolSize: 20, // Larger pool
+      minPoolSize: 5,
+      maxIdleTimeMS: 0, // NO idle timeout
+      connectTimeoutMS: 30000,
+      retryWrites: true,
+      w: 'majority'
     });
     console.log(`✅ Connected to MongoDB: ${conn.connection.host}`);
+    console.log('🔒 Connection will persist until manually stopped');
+    
+    // Monitor connection
+    mongoose.connection.on('disconnected', () => {
+      console.warn('⚠️ MongoDB disconnected, attempting to reconnect...');
+      setTimeout(() => {
+        connectDB();
+      }, 5000); // Retry after 5 seconds
+    });
+    
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ MongoDB error:', err);
+    });
+    
+    mongoose.connection.on('connected', () => {
+      console.log('✅ MongoDB connection established');
+    });
+    
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
-    console.log('⚠️ Running without database - some features will be limited');
-    // Don't exit, continue without database for demo purposes
+    console.log('⚠️ Retrying connection in 5 seconds...');
+    setTimeout(() => {
+      connectDB();
+    }, 5000);
   }
 };
 
@@ -82,7 +107,9 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     message: 'Craftify API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    mongodbStatus: require('mongoose').connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    uptime: process.uptime()
   });
 });
 
@@ -128,8 +155,53 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log('📌 Server will stay connected until you manually stop it (Ctrl+C)');
+});
+
+// Extended timeout settings to prevent disconnection
+server.keepAliveTimeout = 120000; // 2 minutes
+server.headersTimeout = 125000; // 2 min 5 sec
+server.timeout = 0; // NO TIMEOUT
+
+// Keep the connection alive
+setInterval(() => {
+  console.log('✅ Server is running and connected - ' + new Date().toLocaleTimeString());
+}, 30000); // Log every 30 seconds
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, gracefully shutting down...');
+  server.close(() => {
+    console.log('Server closed');
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    });
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, gracefully shutting down...');
+  server.close(() => {
+    console.log('Server closed');
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    });
+  });
+});
+
+// Catch uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+// Catch unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 module.exports = app;
