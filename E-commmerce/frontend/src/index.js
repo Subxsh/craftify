@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { WishlistProvider } from './contexts/WishlistContext';
 import GlobalStyles from './styles/GlobalStyles';
 
 // Create a client for React Query
@@ -31,20 +32,22 @@ root.render(
         <BrowserRouter>
           <AuthProvider>
             <CartProvider>
-              <GlobalStyles />
-              <App />
-              <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-              />
+              <WishlistProvider>
+                <GlobalStyles />
+                <App />
+                <ToastContainer
+                  position="top-right"
+                  autoClose={5000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme="light"
+                />
+              </WishlistProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>

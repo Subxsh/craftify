@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiHeart } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -232,6 +233,7 @@ const Header = () => {
   
   const { user, logout } = useAuth();
   const { getCartItemCount } = useCart();
+  const { totalItems: wishlistCount } = useWishlist();
   const navigate = useNavigate();
 
   // Close menu when clicking outside
@@ -299,6 +301,9 @@ const Header = () => {
 
               <ActionButton as={Link} to="/wishlist" onClick={() => setIsUserMenuOpen(false)}>
                 <FiHeart />
+                {wishlistCount > 0 && (
+                  <CartBadge>{wishlistCount}</CartBadge>
+                )}
               </ActionButton>
 
               <ActionButton as={Link} to="/cart" onClick={() => setIsUserMenuOpen(false)}>

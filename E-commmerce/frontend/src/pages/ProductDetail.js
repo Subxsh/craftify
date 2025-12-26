@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { FiHeart, FiShoppingCart, FiStar, FiArrowLeft, FiUser, FiPackage, FiTruck, FiShield } from 'react-icons/fi';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import productService from '../services/productService';
 import getImageUrl from '../utils/getImageUrl';
 import Reviews from '../components/common/Reviews';
@@ -192,11 +193,42 @@ const DetailValue = styled.span`
   color: var(--dark-gray);
 `;
 
+const WishlistButton = styled.button`
+  width: 100%;
+  padding: var(--spacing-md);
+  background: ${props => props.$isInWishlist ? 'var(--accent-color)' : 'var(--light-gray)'};
+  color: ${props => props.$isInWishlist ? 'var(--white)' : 'var(--gray)'};
+  border: 1px solid ${props => props.$isInWishlist ? 'var(--accent-color)' : 'var(--gray)'};
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: ${props => props.$isInWishlist ? 'var(--accent-dark)' : 'var(--primary-light)'};
+    color: ${props => props.$isInWishlist ? 'var(--white)' : 'var(--primary-color)'};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    font-size: 1.25rem;
+  }
+`;
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, token } = useAuth();
   const { addToCart, buyNow } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -208,6 +240,7 @@ const ProductDetail = () => {
   const [userOrders, setUserOrders] = useState([]);
   const [purchasedOrder, setPurchasedOrder] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -276,6 +309,23 @@ const ProductDetail = () => {
     console.log('purchasedOrder:', purchasedOrder);
     setShowReviewForm(true);
     console.log('State updated to showReviewForm: true');
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!product) return;
+
+    try {
+      setWishlistLoading(true);
+      if (isInWishlist(product._id)) {
+        removeFromWishlist(product._id);
+      } else {
+        addToWishlist(product);
+      }
+    } catch (error) {
+      console.error('❌ Error toggling wishlist:', error);
+    } finally {
+      setWishlistLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -545,29 +595,16 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Wishlist Button - Adds to Cart - Only show when in stock */}
-            {product.inventory?.quantity > 0 && (
-              <button
-                onClick={handleAddToCart}
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md)',
-                  background: 'var(--light-gray)',
-                  color: 'var(--gray)',
-                  border: '1px solid var(--gray)',
-                  borderRadius: 'var(--radius-md)',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-sm)'
-                }}
-                disabled={addingToCart}
-              >
-                <FiHeart /> {addingToCart ? 'Adding to Cart...' : 'Add to Wishlist (Cart)'}
-              </button>
-            )}
+            {/* Wishlist Button */}
+            <WishlistButton
+              onClick={handleWishlistToggle}
+              $isInWishlist={isInWishlist(product._id)}
+              disabled={wishlistLoading}
+              title={isInWishlist(product._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <FiHeart fill={isInWishlist(product._id) ? 'currentColor' : 'none'} />
+              {isInWishlist(product._id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            </WishlistButton>
           </ProductInfo>
         </ProductContent>
 
